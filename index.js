@@ -1,8 +1,3 @@
-let allEmployees;
-let maleToFemaleRatio;
-let percLiveInUS;
-let employeeOfTheMonth;
-
 window.onload = function() {
     // Your code here
     console.log('Window has finished loading.');
@@ -10,36 +5,43 @@ window.onload = function() {
 };
 
 function getAllEmployees(){
-        fetch("http://localhost:3000/getAllEmployees")
-        .then(function(response) {
-            // console.log('response from server', response)
-            if (response.ok) {
-            return response.json();
-            }
-            throw new Error("Network response was not ok.");
-        })
-        .then(function(data) {
-            // Process the response data here
+    fetch("http://localhost:3000/getAllEmployees")
+    .then(function(response) {
+        // console.log('response from server', response)
+        if (response.ok) {
+        return response.json();
+        }
+        throw new Error("Network response was not ok.");
+    })
+    .then(function(data) {
+        // Process the response data here
 
-            //get total employees
-            let totalEmployeesElement = document.getElementById('totalEmployees');
-            totalEmployeesElement.innerText = `${data.length}`
+        let allEmployees = data;
 
-            //get male to female ratio
-            getMaleToFemaleRatio(data)
+        //get total employees
+        let totalEmployeesElement = document.getElementById('totalEmployees');
+        totalEmployeesElement.innerText = `${allEmployees.length}`
 
-            //get percentage of employees that live in US
-            getPercentageOfUSEmployees(data)
+        //get male to female ratio
+        getMaleToFemaleRatio(allEmployees)
 
-            //get random employee of the month
-            let randomEmployeeIndex = Math.floor(Math.random() * (data.length));
-            getEmployeeOfTheMonth(data[randomEmployeeIndex]);
-        })
-        .catch(function(error) {
-            // Handle any error that occurred
-            console.error('error in getAllEmployees()', error)
-        });
+        //get percentage of employees that live in US
+        getPercentageOfUSEmployees(allEmployees)
+
+        //get random employee of the month
+        let randomEmployeeIndex = Math.floor(Math.random() * (allEmployees.length));
+        let employeeOfTheMonth = allEmployees[randomEmployeeIndex]
+        getEmployeeOfTheMonth(employeeOfTheMonth);
+
+        //set href for EOM
+        setEOMHref(employeeOfTheMonth)
+    })
+    .catch(function(error) {
+        // Handle any error that occurred
+        console.error('error in getAllEmployees()', error)
+    });
 };
+
 
 function getMaleToFemaleRatio(allEmployees){
     let numOfMaleEmployees = 0;
@@ -69,13 +71,11 @@ function getPercentageOfUSEmployees(allEmployees){
     let decimal = numInUS/totalNumOfEmployees;
     let percentage = (decimal * 100).toFixed(2) + '%';
 
-    console.log('US percentage', percentage)
     let percentageElement = document.getElementById('percLiveInUS');
     percentageElement.innerText = percentage;
 }
 
 function getEmployeeOfTheMonth(employee){
-    console.log('employee in getEmployeeOfTheMonth', employee)
     let eomName = `${employee.name.first} ${employee.name.last}`;
     let eomAge = `${employee.dob.age}`;
     let eomGender = `${employee.gender.charAt(0).toUpperCase() + employee.gender.slice(1)}`;
@@ -100,5 +100,8 @@ function getEmployeeOfTheMonth(employee){
     eomPictureElement.src = eomPicture;
 }
 
+function setEOMHref(eom){
+    document.getElementById("eomAnchor").href = `./pages/employee/employee.html?id=${eom.login.uuid}`;
+}
 
 
