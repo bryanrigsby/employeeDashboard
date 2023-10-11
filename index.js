@@ -1,6 +1,5 @@
 window.onload = function() {
-    // Your code here
-    console.log('Window has finished loading.');
+    console.log('index.html Window has finished loading.');
     getAllEmployees()
 };
 
@@ -17,6 +16,14 @@ function getAllEmployees(){
         // Process the response data here
 
         let allEmployees = data;
+
+        //set up options for employees dropdown
+        let employeesSelect = document.getElementById("employeesDropDown");
+
+        for (var i = 0; i < allEmployees.length; i++) {
+            var option = new Option(`${allEmployees[i].name.first} ${allEmployees[i].name.last}` , allEmployees[i].login.uuid);
+            employeesSelect.add(option);
+        }
 
         //get total employees
         let totalEmployeesElement = document.getElementById('totalEmployees');
@@ -104,4 +111,14 @@ function setEOMHref(eom){
     document.getElementById("eomAnchor").href = `./pages/employee/employee.html?id=${eom.login.uuid}`;
 }
 
+function employeeDropdownRedirect(){
+    const selectedValue = document.getElementById("employeesDropDown").value;
+    console.log('selectedValue in setEmployeeHref()', selectedValue)
+    const url = `./pages/employee/employee.html?id=${selectedValue}`
+    // Navigate to the new URL
+    window.location.href = url;
+}
 
+[1, 2 -7]
+
+"1, 2, -7 "

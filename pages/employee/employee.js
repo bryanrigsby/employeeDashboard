@@ -1,11 +1,13 @@
+let employeeID;
+
 window.onload = function() {
     console.log('employee.js Window has finished loading.');
 
     //get id from query params and pass to getEOMData() 
     const urlParams = new URLSearchParams(window.location.search);
-    const eomID = urlParams.get('id');
+    employeeID = urlParams.get('id');
 
-    getEOMData(eomID)
+    getEmployeeData(employeeID)
 
     //set up options for Country
     let countrySelect = document.getElementById("country");
@@ -142,13 +144,26 @@ window.onload = function() {
         { label: 'Victoria', value: 'victoria' }
       ];
       
-      for (var i = 0; i < states.length; i++) {
-        var option = new Option(states[i].label, states[i].value);
-        stateSelect.add(option);
+    for (var i = 0; i < states.length; i++) {
+    var option = new Option(states[i].label, states[i].value);
+    stateSelect.add(option);
+    }
+
+    let genderSelect = document.getElementById("gender");
+
+    const genders = [
+        {label: 'Male', value: 'male'},
+        {label: 'Female', value: 'female'},
+        {label: 'Other', value: 'other'},
+    ];
+
+    for (var i = 0; i < genders.length; i++) {
+        var option = new Option(genders[i].label, genders[i].value);
+        genderSelect.add(option);
     }
 };
 
-function getEOMData(uuid){
+function getEmployeeData(uuid){
     console.log('uuid in getEOMData', uuid)
 
     //GET request
@@ -158,7 +173,7 @@ function getEOMData(uuid){
         let employee = data;
         console.log('employee returned from GET fetch', employee)
 
-        setEOMDataOnElements(employee)
+        setEmployeeDataOnElements(employee)
 
     })
     .catch(error => console.log('Error:', error));
@@ -191,7 +206,7 @@ function getEOMData(uuid){
     
 }
 
-function setEOMDataOnElements(employee){
+function setEmployeeDataOnElements(employee){
     //get elements 
     document.getElementById('employeeImage').src = `${employee.picture.large}`;
     document.getElementById('firstName').value = `${employee.name.first}`;
@@ -202,10 +217,35 @@ function setEOMDataOnElements(employee){
     document.getElementById('state').value = `${employee.location.state.toLowerCase()}`;
     document.getElementById('zip').value = `${employee.location.postcode}`;
     document.getElementById('country').value = `${employee.location.country.toLowerCase()}`;
-    
-
-
-    //set innerText
+    document.getElementById('dob').value = `${formatDate(new Date(employee.dob.date))}`;
+    document.getElementById('phone').value = `${employee.cell}`;
+    document.getElementById('gender').value = `${employee.gender.toLowerCase()}`;
 }
+
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const day = String(date.getDate()).padStart(2, '0');
+  
+    return `${year}-${month}-${day}`;
+  }
+
+  function submitForm(){
+    const form = document.getElementById('employeeEditForm');
+    const formData = new FormData(form);
+    formData.append('employeeID', employeeID);
+
+
+    fetch('http://localhost:3000/updateEmployee', {
+    method: 'POST',
+    body: formData
+    })
+    .then(response => response.json())
+    .then(data => console.log('POST returned data', data))
+    .catch(error => console.log('Error:', error));
+
+
+  }
+  
 
 

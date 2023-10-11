@@ -1,4 +1,7 @@
 const express = require('express');
+const multer  = require('multer');
+const upload = multer();
+
 const app = express();
 const cors = require('cors');
 const allEmployees = require('./database/employees'); 
@@ -21,27 +24,36 @@ app.get('/getAllEmployees', (req, res) => {
 
 app.get('/getSpecificEmployeeGet', (req, res) => {
   let uuid = req.query.uuid;
-  console.log('uuid in GET', uuid)
+  // console.log('uuid in GET', uuid)
 
   //go through allEmployees to get correct employee object to return
   //this is where you would query your db
 
   let employeeObj = allEmployees.find(f => f.login.uuid === uuid)
-  console.log('employeeObj', employeeObj)
+  // console.log('employeeObj', employeeObj)
 
   res.json(employeeObj)
 })
 
 app.post('/getSpecificEmployeePost', (req, res) => {
-  console.log('req.body.uuid POST', req.body.uuid)
+  // console.log('req.body.uuid POST', req.body.uuid)
 
   //go through allEmployees to get correct employee object to return
   //this is where you would query your db
 
   let employeeObj = allEmployees.find(f => f.login.uuid === uuid)
-  console.log('employeeObj', employeeObj)
+  // console.log('employeeObj', employeeObj)
 
   res.json(employeeObj)
+})
+
+app.post('/updateEmployee', upload.none(), (req, res) => {
+  console.log('req.body in updateEmployee POST', req.body)
+
+  // eventually we will write query to update employee in db
+  // for now we will update the employees.js array
+
+  
 })
 
 const port = 3000;
