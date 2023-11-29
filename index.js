@@ -1,124 +1,221 @@
-window.onload = function() {
-    console.log('index.html Window has finished loading.');
+var modal = document.getElementById('addEmployeeModal');
+var openModalButton = document.getElementById('modalButton');
+var closedModalButton = document.getElementById('closeModalButton');
+
+openModalButton.onclick = function(){
+ modal.style.display = 'block';
+}
+
+closedModalButton.onclick = function() {
+  modal.style.display = 'none';
+}
+
+window.onclick = function(event) {
+  if(event.target==modal){
+     modal.style.display= 'none';
+  }
+}
+
+window.onload = function () {
+    console.log('Window has finished loading.');
     getAllEmployees()
+    getCompanyInfo()
 };
 
-function getAllEmployees(){
-    fetch("http://localhost:3000/getAllEmployees")
-    .then(function(response) {
-        // console.log('response from server', response)
-        if (response.ok) {
-        return response.json();
-        }
-        throw new Error("Network response was not ok.");
-    })
-    .then(function(data) {
-        // Process the response data here
 
-        let allEmployees = data;
+function getAllEmployees() {
+    fetch("http://localhost:3000/getAllEmployees")
+    .then(function(response){
+        if(response.ok){
+            return response.json();
+        }
+        throw new Error('Network response was not ok.');
+      })
+      .then(function(data){
+        let employeesArray = data.employees;
+        console.log('employeesArray', employeesArray)
 
         //set up options for employees dropdown
         let employeesSelect = document.getElementById("employeesDropDown");
-
-        for (var i = 0; i < allEmployees.length; i++) {
-            var option = new Option(`${allEmployees[i].name.first} ${allEmployees[i].name.last}` , allEmployees[i].login.uuid);
+        for (var i = 0; i < employeesArray.length; i++) {
+            var option = new Option(`${employeesArray[i].firstName} ${employeesArray[i].lastName}` , employeesArray[i].UUID);
             employeesSelect.add(option);
         }
 
-        //get total employees
-        let totalEmployeesElement = document.getElementById('totalEmployees');
-        totalEmployeesElement.innerText = `${allEmployees.length}`
+        // get random number for employee of the month
+       let randomEmployeeIndex = Math.floor(Math.random() * (employeesArray.length));
+       let randomeEmployee = employeesArray[randomEmployeeIndex];
+        getEmployeeofTheMonth(randomeEmployee);
+        setEOMHref(randomeEmployee)
+        totalEmployees(employeesArray);
+        maleToFemaleRatio(employeesArray);
+        percLiveInUS(employeesArray);
 
-        //get male to female ratio
-        getMaleToFemaleRatio(allEmployees)
-
-        //get percentage of employees that live in US
-        getPercentageOfUSEmployees(allEmployees)
-
-        //get random employee of the month
-        let randomEmployeeIndex = Math.floor(Math.random() * (allEmployees.length));
-        let employeeOfTheMonth = allEmployees[randomEmployeeIndex]
-        getEmployeeOfTheMonth(employeeOfTheMonth);
-
-        //set href for EOM
-        setEOMHref(employeeOfTheMonth)
-    })
-    .catch(function(error) {
-        // Handle any error that occurred
-        console.error('error in getAllEmployees()', error)
-    });
+      })
+      .catch(function(error){
+        console.log(error);
+      })
 };
 
-
-function getMaleToFemaleRatio(allEmployees){
-    let numOfMaleEmployees = 0;
-    let numOfFemaleEmployees = 0;
-    allEmployees.map(e => {
-        if(e.gender === 'male'){
-            numOfMaleEmployees++
+function getCompanyInfo() {
+    fetch("http://localhost:3000/getCompanyInfo")
+    .then(function(response){
+        if(response.ok){
+            return response.json();
         }
-        else if(e.gender === 'female'){
-            numOfFemaleEmployees++
-        }
-    })
+        throw new Error('Network response was not ok.');
+      })
+      .then(function(data){
+        console.log('data from getCompanyInfo', data)
+        let companyInfoArray = data.companyInfo;
+        const name = companyInfoArray[0].name;
+        let companyNameElement = document.querySelector('#companyname')
+        companyNameElement.innerText = name;
+        let businessCategory = document.getElementById("businessCategory")
+        businessCategory.innerText = companyInfoArray[0].category;
+        let businessAdress = document.getElementById("businessAdress")
+        businessAdress.innerText = `${companyInfoArray[0].address} ${companyInfoArray[0].city} ${companyInfoArray[0].state}, ${companyInfoArray[0].country}`;
+        })
+      .catch(function(error){
+        console.log(error);
+      })
+};
 
-    let maleToFemaleEmployeeRatioElement = document.getElementById('maleToFemaleRatio');
-    maleToFemaleEmployeeRatioElement.innerText = `${numOfMaleEmployees.toString()} / ${numOfFemaleEmployees.toString()}`;
+function getAge(dob){
+  let dateOfBirth = new Date(dob);
+  let currentDate = new Date();
+  let age = currentDate.getFullYear() - dateOfBirth.getFullYear();
+
+  // Check if the birthday has occurred this year
+  if (
+    currentDate.getMonth() < dateOfBirth.getMonth() ||
+    (currentDate.getMonth() === dateOfBirth.getMonth() &&
+      currentDate.getDate() < dateOfBirth.getDate())
+  ) {
+    // Subtract 1 from age if the birthday hasn't occurred yet this year
+    return age - 1;
+  }
+  return age;
+ }
+
+function getEmployeeofTheMonth(randomEmployee) {
+  let employeeName = document.getElementById('employeeName');
+  employeeName.innerText = `${randomEmployee.firstName} ${randomEmployee.lastName}`;
+  let employeeAge = document.getElementById('employeeAge')
+  let age = getAge(randomEmployee.dob)
+  employeeAge.innerText = `${age}`;
+  let employeeGender = document.getElementById('employeeGender')
+  employeeGender.innerText = `${randomEmployee.gender}`;
+  let employeeEmail = document.getElementById('employeeEmail')
+  employeeEmail.innerText = `${randomEmployee.email}`;
+  let employeeCity = document.getElementById('employeeCity')
+  employeeCity.innerText = `${randomEmployee.city}`;
+  let employeeCountry = document.getElementById('employeeCountry')
+  employeeCountry.innerText = `${randomEmployee.country}`;
+  let eomPictures = document.getElementById("eomPicture");
+  eomPictures.src = `${randomEmployee.picture}`;
 }
 
-function getPercentageOfUSEmployees(allEmployees){
-    let totalNumOfEmployees = allEmployees.length;
-    let numInUS = 0;
-    allEmployees.map((a)=> {
-        if(a.location.country === "United States"){
-            numInUS++
-        }
-    })
-
-    let decimal = numInUS/totalNumOfEmployees;
-    let percentage = (decimal * 100).toFixed(2) + '%';
-
-    let percentageElement = document.getElementById('percLiveInUS');
-    percentageElement.innerText = percentage;
+function totalEmployees(allEmployees) {
+  const totalNumberOFEmployees = allEmployees.length;
+  let totalEmployees=document.getElementById('totalEmployees');
+  totalEmployees.innerText = `${allEmployees.length}`;
 }
 
-function getEmployeeOfTheMonth(employee){
-    let eomName = `${employee.name.first} ${employee.name.last}`;
-    let eomAge = `${employee.dob.age}`;
-    let eomGender = `${employee.gender.charAt(0).toUpperCase() + employee.gender.slice(1)}`;
-    let eomEmail = `${employee.email}`;
-    let eomCity = `${employee.location.city}`;
-    let eomCountry = `${employee.location.country}`;
-    let eomPicture = `${employee.picture.large}`;
+function maleToFemaleRatio(allEmployees) {
+  let femaleCount = 0;
+  let maleCount = 0;
+  for (let i = 0; i < allEmployees.length; i++) {
+    const element = allEmployees[i];
+    if (element.Gender === 'Male') {
+      maleCount = maleCount + 1;
+    }else{
+      femaleCount = femaleCount + 1;
+    }
+  }
+  let ratio = document.getElementById('maleToFemaleRatio');
+  ratio.innerText = maleCount + " /" + femaleCount;
+}
+function percLiveInUS(allEmployees) {
+  let usResident = 0;
+  for (let i = 0; i < allEmployees.length; i++) {
+    const element = allEmployees[i];
+    if(element.Country === 'USA'){
+      usResident = usResident +1;
+    }
+  } 
+  let percentage = ((usResident/allEmployees.length) * 100).toFixed(0); 
+  document.getElementById('percLiveInUS').innerText = percentage + '%';
+}
 
-    let eomNameElement = document.getElementById('eomName')
-    eomNameElement.innerText = eomName;
-    let eomAgeElement = document.getElementById('eomAge')
-    eomAgeElement.innerText = eomAge;
-    let eomGenderElement = document.getElementById('eomGender')
-    eomGenderElement.innerText = eomGender;
-    let eomEmailElement = document.getElementById('eomEmail')
-    eomEmailElement.innerText = eomEmail;
-    let eomCityElement = document.getElementById('eomCity')
-    eomCityElement.innerText = eomCity;
-    let eomCountryElement = document.getElementById('eomCountry')
-    eomCountryElement.innerText = eomCountry;
-    let eomPictureElement = document.getElementById('eomPicture')
-    eomPictureElement.src = eomPicture;
+const form = document.getElementById('addEmployeeForm');
+form.addEventListener('submit', function (event) {
+  event.preventDefault();
+  //add loading screen, confirmation popup and reset/close modal when complete
+  addEmployee()
+})
+
+function addEmployee(){
+  console.log('gn2 addEmployee()')
+
+  let newEmployeeObj = {
+    firstName: document.getElementById('firstName').value,
+    lastName: document.getElementById('lastName').value,
+    gender: document.getElementById('gender').value,
+    address: document.getElementById('address').value,
+    city: document.getElementById('city').value,
+    state: document.getElementById('state').value,
+    zipcode: document.getElementById('zipcode').value,
+    email: document.getElementById('email').value,
+    dob: document.getElementById('dob').value,
+    phone: document.getElementById('phone').value,
+    picture: document.getElementById('picture').value
+  }
+
+  console.log('newEmployeeObj', newEmployeeObj)
+
+  fetch('http://localhost:3000/addEmployee', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(newEmployeeObj),
+  })
+  .then(function(response){
+    if(response.ok){
+        return response.json();
+    }
+    throw new Error('Network response was not ok.');
+  })
+  .then(function(data){
+   console.log('data returned in addNewEmployee', data)
+   //getting success message. display in popup and clear/close modal
+   if(data.success){
+    alert(data.message)
+    // const form = document.getElementById('addEmployeeForm');
+    form.reset()
+    modal.style.display = 'none';
+   }
+   else{
+    alert(data.message)
+   }
+  })
+  .catch(function(error){
+    console.log(error);
+    alert('something went wrong')
+  })
 }
 
 function setEOMHref(eom){
-    document.getElementById("eomAnchor").href = `./pages/employee/employee.html?id=${eom.login.uuid}`;
+  document.getElementById("eomAnchor").href = `./pages/employee/employee.html?id=${eom.login.uuid}`;
 }
 
 function employeeDropdownRedirect(){
-    const selectedValue = document.getElementById("employeesDropDown").value;
-    console.log('selectedValue in setEmployeeHref()', selectedValue)
-    const url = `./pages/employee/employee.html?id=${selectedValue}`
-    // Navigate to the new URL
-    window.location.href = url;
+  const selectedValue = document.getElementById("employeesDropDown").value;
+  console.log('selectedValue in setEmployeeHref()', selectedValue)
+  const url = `./pages/employee/employee.html?id=${selectedValue}`
+  // Navigate to the new URL
+  window.location.href = url;
 }
 
-[1, 2 -7]
 
-"1, 2, -7 "

@@ -164,61 +164,49 @@ window.onload = function() {
 };
 
 function getEmployeeData(uuid){
-    console.log('uuid in getEOMData', uuid)
+    console.log('uuid in getEOMData', typeof uuid)
 
-    //GET request
-    fetch(`http://localhost:3000/getSpecificEmployeeGet?uuid=${uuid}`)
-    .then(response => response.json())
-    .then(data => {
-        let employee = data;
-        console.log('employee returned from GET fetch', employee)
+    fetch('http://localhost:3000/getSpecificEmployee', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({UUID: uuid}),
+  })
+  .then(function(response){
+    if(response.ok){
+        return response.json();
+    }
+    throw new Error('Network response was not ok.');
+  })
+  .then(function(data){
+   console.log('data returned in getSpecificEmployee', data)
+   //getting success message. display in popup and clear/close modal
+    //    let employee = data.employee;
+    //    console.log('employee returned from GET fetch', employee)
 
-        setEmployeeDataOnElements(employee)
-
+    //    setEmployeeDataOnElements(employee)
     })
-    .catch(error => console.log('Error:', error));
-    /////////
+  .catch(function(error){
+    console.log(error);
+    alert('something went wrong in getSpecificEmployee')
+  })
 
-
-
-
-
-    ////POST request
-    // const payload = {
-    //     uuid: id,
-    // };
-
-    // console.log('payload', payload)
-      
-    // fetch('http://localhost:3000/getSpecificEmployeePost', {
-    // method: 'POST',
-    // headers: {
-    //     'Content-Type': 'application/json',
-    // },
-    // body: JSON.stringify(payload),
-    // })
-    // .then(response => response.json())
-    // .then(data => console.log('POST returned data', data))
-    // .catch(error => console.log('Error:', error));
-    //////////
-
-
-    
 }
 
 function setEmployeeDataOnElements(employee){
     //get elements 
-    document.getElementById('employeeImage').src = `${employee.picture.large}`;
-    document.getElementById('firstName').value = `${employee.name.first}`;
-    document.getElementById('lastName').value = `${employee.name.last}`;
+    document.getElementById('employeeImage').src = `${employee.picture}`;
+    document.getElementById('firstName').value = `${employee.firstName}`;
+    document.getElementById('lastName').value = `${employee.lastName}`;
     document.getElementById('email').value = `${employee.email}`;
-    document.getElementById('address').value = `${employee.location.street.number} ${employee.location.street.name}`;
-    document.getElementById('city').value = `${employee.location.city}`;
-    document.getElementById('state').value = `${employee.location.state.toLowerCase()}`;
-    document.getElementById('zip').value = `${employee.location.postcode}`;
-    document.getElementById('country').value = `${employee.location.country.toLowerCase()}`;
-    document.getElementById('dob').value = `${formatDate(new Date(employee.dob.date))}`;
-    document.getElementById('phone').value = `${employee.cell}`;
+    document.getElementById('address').value = `${employee.address}`;
+    document.getElementById('city').value = `${employee.city}`;
+    document.getElementById('state').value = `${employee.state ? employee.state.toLowerCase() : ''}`;
+    document.getElementById('zip').value = `${employee.zipcode}`;
+    document.getElementById('country').value = `${employee.country.toLowerCase()}`;//fix countries in db to have full name
+    document.getElementById('dob').value = `${new Date(employee.dob)}`;
+    document.getElementById('phone').value = `${employee.phone}`;
     document.getElementById('gender').value = `${employee.gender.toLowerCase()}`;
 }
 
