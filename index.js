@@ -207,7 +207,7 @@ function addEmployee(){
 }
 
 function setEOMHref(eom){
-  document.getElementById("eomAnchor").href = `./pages/employee/employee.html?id=${eom.login.uuid}`;
+  document.getElementById("eomAnchor").href = `./pages/employee/employee.html?id=${eom.UUID}`;
 }
 
 function employeeDropdownRedirect(){

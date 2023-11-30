@@ -164,7 +164,7 @@ window.onload = function() {
 };
 
 function getEmployeeData(uuid){
-    console.log('uuid in getEOMData', typeof uuid)
+    console.log('uuid in getEOMData', uuid)
 
     fetch('http://localhost:3000/getSpecificEmployee', {
     method: 'POST',
@@ -180,12 +180,8 @@ function getEmployeeData(uuid){
     throw new Error('Network response was not ok.');
   })
   .then(function(data){
-   console.log('data returned in getSpecificEmployee', data)
-   //getting success message. display in popup and clear/close modal
-    //    let employee = data.employee;
-    //    console.log('employee returned from GET fetch', employee)
-
-    //    setEmployeeDataOnElements(employee)
+   console.log('data returned in getSpecificEmployee', data.employeeObj)
+       setEmployeeDataOnElements(data.employeeObj)
     })
   .catch(function(error){
     console.log(error);
@@ -195,17 +191,18 @@ function getEmployeeData(uuid){
 }
 
 function setEmployeeDataOnElements(employee){
+    console.log('employee in setEmployeeDataOnElements', employee)
     //get elements 
-    document.getElementById('employeeImage').src = `${employee.picture}`;
+    document.getElementById('picture').src = `${employee.picture}`;
     document.getElementById('firstName').value = `${employee.firstName}`;
     document.getElementById('lastName').value = `${employee.lastName}`;
     document.getElementById('email').value = `${employee.email}`;
     document.getElementById('address').value = `${employee.address}`;
     document.getElementById('city').value = `${employee.city}`;
     document.getElementById('state').value = `${employee.state ? employee.state.toLowerCase() : ''}`;
-    document.getElementById('zip').value = `${employee.zipcode}`;
+    document.getElementById('zipcode').value = `${employee.zipcode}`;
     document.getElementById('country').value = `${employee.country.toLowerCase()}`;//fix countries in db to have full name
-    document.getElementById('dob').value = `${new Date(employee.dob)}`;
+    document.getElementById('dob').value = `${formatDate(new Date(employee.dob))}`;
     document.getElementById('phone').value = `${employee.phone}`;
     document.getElementById('gender').value = `${employee.gender.toLowerCase()}`;
 }
@@ -219,18 +216,50 @@ function formatDate(date) {
   }
 
   function submitForm(){
-    const form = document.getElementById('employeeEditForm');
-    const formData = new FormData(form);
-    formData.append('employeeID', employeeID);
+    let updatedEmployeeObj = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        gender: document.getElementById('gender').value,
+        address: document.getElementById('address').value,
+        city: document.getElementById('city').value,
+        state: document.getElementById('state').value,
+        zipcode: document.getElementById('zipcode').value,
+        email: document.getElementById('email').value,
+        dob: document.getElementById('dob').value,
+        phone: document.getElementById('phone').value,
+    }
+    updatedEmployeeObj.UUID = employeeID;
+
+    console.log('updatedEmployeeObj', updatedEmployeeObj)
 
 
     fetch('http://localhost:3000/updateEmployee', {
-    method: 'POST',
-    body: formData
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedEmployeeObj)
     })
-    .then(response => response.json())
-    .then(data => console.log('POST returned data', data))
-    .catch(error => console.log('Error:', error));
+    .then(function(response){
+        if(response.ok){
+            return response.json();
+        }
+        throw new Error('Network response was not ok.');
+      })
+      .then(function(data){
+       console.log('data returned in updateEmployee', data)
+       //getting success message. display in popup and clear/close modal
+       if(data.success){
+        alert(data.message)
+       }
+       else{
+        alert(data.message)
+       }
+      })
+      .catch(function(error){
+        console.log(error);
+        alert('something went wrong')
+      })
 
 
   }
